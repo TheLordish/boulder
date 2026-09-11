@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#0E110E">
+<meta name="description" content="Food, body and training log.">
+<title>Boulder</title>
+<link rel="manifest" href="manifest.webmanifest?v=3.5.0">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg?v=3.5.0">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=3.5.0">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192.png?v=3.5.0">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/app.css?v=3.5.0">
+</head>
+<body>
+<div id="bootError" hidden></div>
+
+<div class="app">
+
+  <header class="top">
+    <nav class="tabs" role="tablist">
+      <button role="tab" id="tabLog" aria-selected="true"><span class="ic" data-icon="today" data-size="19"></span>Today</button>
+      <button role="tab" id="tabMonth" aria-selected="false"><span class="ic" data-icon="calendar" data-size="19"></span>Calendar</button>
+      <button role="tab" id="tabWeight" aria-selected="false"><span class="ic" data-icon="body" data-size="19"></span>Body</button>
+      <button role="tab" id="tabGym" aria-selected="false"><span class="ic" data-icon="gym" data-size="19"></span>Gym</button>
+      <button role="tab" id="tabAsk" aria-selected="false"><span class="ic" data-icon="ask" data-size="19"></span>Ask</button>
+    </nav>
+    <button class="gear" id="gear" aria-label="Settings" data-icon="gear" data-size="18"></button>
+  </header>
+
+  <main class="stage">
+
+    <section class="page" id="viewLog">
+      <div class="daterow">
+        <button class="chev" id="prevDay" aria-label="Previous day" data-icon="left" data-size="17"></button>
+        <h1 id="dateLabel">&nbsp;</h1>
+        <button class="chev" id="nextDay" aria-label="Next day" data-icon="right" data-size="17"></button>
+      </div>
+      <div class="dial">
+        <div class="rings">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <circle class="track" cx="60" cy="60" r="52" stroke-width="8"></circle>
+            <circle class="arcK" id="arcK" cx="60" cy="60" r="52" stroke-width="8"></circle>
+            <circle class="track" cx="60" cy="60" r="39" stroke-width="5"></circle>
+            <circle class="arcP" id="arcP" cx="60" cy="60" r="39" stroke-width="5"></circle>
+          </svg>
+        </div>
+        <div class="dialtext">
+          <span class="big" id="remaining">&nbsp;</span>
+          <div class="sub" id="heroSub"></div>
+          <div class="sub prot" id="protLine"></div>
+        </div>
+      </div>
+
+      <div class="wgoal" id="wGoal"></div>
+
+      <div class="chips" id="chipRow">
+        <span id="carryWrap"></span>
+        <button class="chip act" id="chipStreak"></button>
+        <button class="chip act hot" id="chipAdvice" hidden></button>
+        <button class="chip act" id="chipMeals"><span data-icon="meals" data-size="13"></span>Saved meals</button>
+      </div>
+
+      <div class="listhead"><span id="logTitle"></span><span id="logTotal"></span></div>
+      <div class="scroll" id="rows"></div>
+      <div class="footnote" id="window"></div>
+
+      <div class="dock">
+        <div class="shots" id="photoQueue" hidden></div>
+        <div class="favs" id="favs"></div>
+
+        <div class="modes" role="tablist">
+          <button role="tab" id="modeFields" aria-selected="true">Fields</button>
+          <button role="tab" id="modeText" aria-selected="false">Describe</button>
+        </div>
+
+        <div id="formEntry">
+          <div class="frow">
+            <input id="fName" type="text" autocomplete="off" placeholder="Food name">
+            <button class="unit" id="fUnit" aria-label="Change unit">g</button>
+            <button class="sq" id="photoBtn" aria-label="Photograph food or a label" data-icon="camera" data-size="19"></button>
+          </div>
+          <div class="frow nums">
+            <input id="fAmt" type="number" inputmode="decimal" step="any" min="0" placeholder="amt">
+            <input id="fKcal" type="number" inputmode="numeric" min="0" placeholder="kcal">
+            <input id="fP" type="number" inputmode="numeric" min="0" placeholder="pro">
+            <input id="fC" type="number" inputmode="numeric" min="0" placeholder="carb">
+            <input id="fF" type="number" inputmode="numeric" min="0" placeholder="fat">
+            <button class="go" id="fLog">Log</button>
+          </div>
+        </div>
+
+        <div id="textEntry" hidden>
+          <div class="entry">
+            <input id="foodInput" type="text" autocomplete="off" placeholder="A whole meal, in words">
+            <button class="go" id="logBtn">Log</button>
+          </div>
+        </div>
+
+        <input id="photoInput" type="file" accept="image/*" capture="environment" hidden>
+        <div class="statusrow">
+          <button class="toggle" id="lookupBtn" aria-pressed="false">Search web</button>
+          <div class="status" id="status"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page" id="viewMonth" hidden>
+      <h2 class="ptitle">Calendar</h2>
+      <div class="navrow">
+        <button class="chev" id="prevMonth" aria-label="Previous month" data-icon="left" data-size="17"></button>
+        <span id="monthLabel"></span>
+        <button class="chev" id="nextMonth" aria-label="Next month" data-icon="right" data-size="17"></button>
+      </div>
+      <div class="dow"><div>mo</div><div>tu</div><div>we</div><div>th</div><div>fr</div><div>sa</div><div>su</div></div>
+      <div class="grid" id="calGrid"></div>
+      <div class="histhead"><span>Daily calories</span><span id="histNote"></span></div>
+      <div class="hist" id="histBox"></div>
+      <div class="stats" id="mStats"></div>
+      <div class="footnote">Tap a day to open it.</div>
+    </section>
+
+    <section class="page" id="viewWeight" hidden>
+      <h2 class="ptitle">Body</h2>
+      <div class="seg" role="tablist">
+        <button role="tab" id="segWeight" aria-selected="true">Weight</button>
+        <button role="tab" id="segStreak" aria-selected="false">Streak</button>
+        <button role="tab" id="segComp" aria-selected="false">Scan</button>
+      </div>
+
+      <div id="paneWeight" class="fill tight">
+        <div class="dial tight">
+          <div class="dialtext">
+            <span class="big blue" id="wBig">&nbsp;</span>
+            <div class="sub" id="wSub"></div>
+          </div>
+        </div>
+        <div class="chart" id="chartBox"></div>
+        <div class="chips" id="rateRow"></div>
+        <div class="entry weigh">
+          <label class="lbl" for="wInput" id="wInputLabel">Today</label>
+          <div class="qty"><input id="wInput" type="number" inputmode="decimal" step="0.1" min="0" placeholder="0.0"><span class="u">kg</span></div>
+          <button class="go" id="wSave">Save</button>
+          <button class="mini" id="wClear">Clear</button>
+        </div>
+        <div class="cplist" id="cpList"></div>
+        <div class="cpadd">
+          <div class="qty"><input id="cpKg" type="number" inputmode="decimal" step="0.5" min="0" placeholder="85"><span class="u">kg</span></div>
+          <span class="by">by</span>
+          <input class="date" id="cpDate" type="date">
+          <button class="mini ok" id="cpAdd">Add</button>
+        </div>
+      <div class="navrow slim">
+        <button class="chev" id="prevWMonth" aria-label="Previous month" data-icon="left" data-size="17"></button>
+        <span id="wMonthLabel"></span>
+        <button class="chev" id="nextWMonth" aria-label="Next month" data-icon="right" data-size="17"></button>
+      </div>
+      <div class="dow"><div>mo</div><div>tu</div><div>we</div><div>th</div><div>fr</div><div>sa</div><div>su</div></div>
+      <div class="grid" id="wGrid"></div>
+      </div>
+
+      <div id="paneStreak" class="fill" hidden>
+        <div class="dial tight">
+          <div class="dialtext">
+            <span class="big sage" id="stBig">&nbsp;</span>
+            <div class="sub" id="stSub"></div>
+          </div>
+        </div>
+        <div class="stacts" id="stStrip"></div>
+        <div class="navrow slim">
+          <button class="chev" id="prevStMonth" aria-label="Previous month" data-icon="left" data-size="17"></button>
+          <span id="stMonthLabel"></span>
+          <button class="chev" id="nextStMonth" aria-label="Next month" data-icon="right" data-size="17"></button>
+        </div>
+        <div class="dow"><div>mo</div><div>tu</div><div>we</div><div>th</div><div>fr</div><div>sa</div><div>su</div></div>
+        <div class="grid" id="stCal"></div>
+        <div class="scroll" id="stPanel"></div>
+      </div>
+
+      <div id="paneComp" class="fill" hidden>
+        <div class="dial tight">
+          <div class="dialtext">
+            <span class="big blue" id="compBig">&nbsp;</span>
+            <div class="sub" id="compSub"></div>
+          </div>
+        </div>
+        <div class="chips">
+          <button class="chip act" id="compAdd">Add scan</button>
+          <button class="chip act" id="compShoot">Read a printout</button>
+        </div>
+        <input id="compPhoto" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+        <div class="status" id="compStat"></div>
+        <div class="scroll" id="compBody"></div>
+      </div>
+
+    </section>
+
+    <section class="page" id="viewGym" hidden>
+      <h2 class="ptitle">Training</h2>
+      <div class="seg" role="tablist">
+        <button role="tab" id="segSession" aria-selected="true">Session</button>
+        <button role="tab" id="segTrends" aria-selected="false">Trends</button>
+        <button role="tab" id="segPlan" aria-selected="false">Plan</button>
+      </div>
+      <div class="dial tight">
+        <div class="dialtext">
+          <span class="big" id="gymBig">&nbsp;</span>
+          <div class="sub" id="gymSub"></div>
+        </div>
+      </div>
+      <div class="scroll" id="gymBody"></div>
+    </section>
+
+    <section class="page" id="viewAsk" hidden>
+      <h2 class="ptitle">Ask</h2>
+      <div class="seg" role="tablist">
+        <button role="tab" id="segChat" aria-selected="true">Chat</button>
+        <button role="tab" id="segRead" aria-selected="false">Read</button>
+      </div>
+
+      <div id="paneChat" class="fill">
+        <div class="scroll" id="thread"></div>
+        <div class="dock">
+          <div class="entry">
+            <input id="askInput" type="text" autocomplete="off" placeholder="How is my week going?">
+            <button class="go" id="askSend">Ask</button>
+            <button class="mini" id="askClear">Clear</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="paneRead" class="fill" hidden>
+        <div class="scroll" id="coachBox"></div>
+      </div>
+    </section>
+
+  </main>
+
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <div class="sheet" id="sheet" hidden>
+    <div class="handle"></div>
+    <h2>Targets</h2>
+    <div class="pair">
+      <div class="field"><label for="tKcal">Calories</label><input id="tKcal" type="number" inputmode="numeric" min="0"></div>
+      <div class="field"><label for="tProt">Protein (g)</label><input id="tProt" type="number" inputmode="numeric" min="0"></div>
+    </div>
+    <div class="pair">
+      <div class="field"><label for="tWeight">Goal weight (kg)</label><input id="tWeight" type="number" inputmode="decimal" step="0.1" min="0" placeholder="optional"></div>
+      <div class="field"><label for="tRate">Lose per week (kg)</label><input id="tRate" type="number" inputmode="decimal" step="0.05" min="0" placeholder="0.5"></div>
+    </div>
+    <div class="pair">
+      <div class="field"><label for="tBuffer">On-target margin (kcal)</label><input id="tBuffer" type="number" inputmode="numeric" min="0" step="10" placeholder="100"></div>
+      <div class="field"><label for="remTime">Reminder 1</label><input id="remTime" type="time"></div>
+    </div>
+    <div class="pair">
+      <div class="field"><label for="remTime2">Reminder 2</label><input id="remTime2" type="time"></div>
+      <div class="field"><label for="remTime3">Reminder 3</label><input id="remTime3" type="time"></div>
+    </div>
+    <div class="btns">
+      <button class="go" id="saveTargets">Save</button>
+      <button class="mini" id="remTest">Preview</button>
+      <button class="mini" id="remOff">Clear all</button>
+      <button class="mini" id="openData">Data &amp; setup</button>
+    </div>
+    <div class="note" id="remStat"></div>
+  </div>
+
+  <div class="sheet tall" id="dataSheet" hidden>
+    <div class="handle"></div>
+    <div class="scroll" id="dataScroll">
+
+        <details class="fold" id="setupSec">
+          <summary>Setup</summary>
+          <p>Your API key stays on this phone. It is not in the app's code and goes nowhere except Anthropic.</p>
+          <div class="field"><label for="keyInput">API key</label>
+            <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-ant-..."></div>
+          <div class="btns">
+            <button class="go" id="keySave">Save key</button>
+            <button class="mini" id="keyTest">Test it</button>
+            <button class="mini" id="keyShow">Show</button>
+          </div>
+          <div class="note" id="keyStat"></div>
+        </details>
+
+        <details class="fold">
+          <summary>Export</summary>
+          <p>Three sheets: every item, a daily summary with weight joined in, and the weight log.</p>
+          <div class="btns">
+            <button class="go" id="xlsxBtn">Excel</button>
+            <button class="mini" id="allBtn">Everything</button>
+            <button class="mini" id="copyFood">Copy food</button>
+            <button class="mini" id="copyWeight">Copy weight</button>
+          </div>
+          <textarea class="paste" id="copyBox" readonly></textarea>
+          <div class="note" id="dStat"></div>
+        </details>
+
+        <details class="fold">
+          <summary>Import</summary>
+          <p>Takes a full export or rows copied out of Excel. Existing days are merged, not replaced.</p>
+          <div class="btns">
+            <button class="mini" id="importBtn">Import data</button>
+            <button class="mini" id="fileBtn">Choose a file</button>
+          </div>
+          <input id="fileInput" type="file" accept=".json,.txt,.csv,.tsv,application/json,text/plain" hidden>
+          <textarea class="paste" id="importBox" placeholder="Paste an export, or Excel rows, then press Import data again."></textarea>
+          <div class="note" id="rStat"></div>
+        </details>
+
+        <details class="fold">
+          <summary>About</summary>
+          <div class="note" id="verLine"></div>
+          <div class="note" id="modelLine"></div>
+          <div class="note" id="diagLine"></div>
+          <div class="btns"><button class="mini" id="modelRetry">Re-check model</button><button class="mini" id="hardRefresh">Force update</button></div>
+        </details>
+    </div>
+  </div>
+
+  <div class="sheet tall" id="mealsSheet" hidden>
+    <div class="handle"></div>
+    <h2>Saved meals</h2>
+    <div class="note">Each one stores macros for a single unit. Add it with the amount you actually ate.</div>
+    <div class="scroll" id="mealsBody"></div>
+  </div>
+
+  <div class="sheet tall" id="adviceSheet" hidden>
+    <div class="handle"></div>
+    <div class="scroll" id="advice"></div>
+  </div>
+</div>
+
+<script src="js/icons.js?v=3.5.0"></script>
+<script src="js/store.js?v=3.5.0"></script>
+<script src="js/api.js?v=3.5.0"></script>
+<script src="js/gym.js?v=3.5.0"></script>
+<script src="js/comp.js?v=3.5.0"></script>
+<script src="js/extras.js?v=3.5.0"></script>
+<script src="js/photos.js?v=3.5.0"></script>
+<script src="js/entry.js?v=3.5.0"></script>
+<script src="js/app.js?v=3.5.0"></script>
+<script src="js/views2.js?v=3.5.0"></script>
+<script src="js/shell.js?v=3.5.0"></script>
+<script src="js/main.js?v=3.5.0"></script>
+</body>
+</html>
