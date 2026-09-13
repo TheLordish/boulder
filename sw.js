@@ -7,7 +7,7 @@
      serving forever and the app appears frozen on an ancient version
    - the app's own files are always fetched network-first, so a fresh commit
      lands on the next launch without any cache juggling */
-var VER = "5.1.0";
+var VER = "5.1.1";
 var CACHE = "boulder-v" + VER;
 var SHELL = [
   "./", "./index.html",
