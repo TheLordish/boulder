@@ -1,0 +1,42 @@
+name: Build food database
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 1 */6 *"
+
+permissions:
+  contents: write
+
+jobs:
+  foods:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build
+        run: node scripts/build-foods.js
+
+      - name: Report
+        run: |
+          node -e "
+            const d=require('./data/foods.json');
+            console.log('foods:', d.foods.length);
+            console.log('size :', (require('fs').statSync('data/foods.json').size/1024|0)+' KB');
+            ['chicken breast','hummus','shish barak','olive oil','lentils']
+              .forEach(q=>{
+                const hit=d.foods.find(f=>f[0].toLowerCase().includes(q));
+                console.log('  ', q, '->', hit? hit.join(' | ') : 'not found');
+              });
+          "
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/foods.json
+          git diff --staged --quiet || git commit -m "food database rebuilt"
+          git push
