@@ -2,19 +2,6 @@ name: Build APK
 
 on:
   workflow_dispatch:
-    inputs:
-      mode:
-        description: "remote loads the web app from GitHub Pages; bundled ships it inside the APK"
-        required: true
-        default: remote
-        type: choice
-        options: [remote, bundled]
-  push:
-    paths:
-      - "capacitor.config.json"
-      - "package.json"
-      - "scripts/**"
-      - ".github/workflows/build-apk.yml"
 
 jobs:
   build:
@@ -36,36 +23,28 @@ jobs:
 
       - name: Assemble web layer
         run: |
-          MODE="${{ github.event.inputs.mode || 'remote' }}"
           mkdir -p www
-          cp -r index.html css js icons data manifest.webmanifest sw.js www/
-          if [ "$MODE" = "remote" ]; then
-            node -e "
-              const f='capacitor.config.json', c=JSON.parse(require('fs').readFileSync(f));
-              c.server = c.server || {};
-              c.server.url = 'https://${{ github.repository_owner }}.github.io/boulder/';
-              c.server.cleartext = false;
-              require('fs').writeFileSync(f, JSON.stringify(c, null, 2));
-              console.log('pointing at', c.server.url);
-            "
-          else
-            echo 'bundling the web layer into the apk'
-          fi
+          cp -r index.html css js icons manifest.webmanifest sw.js www/
+          if [ -d data ]; then cp -r data www/; fi
+          node -e "const f='capacitor.config.json',c=JSON.parse(require('fs').readFileSync(f));c.server={url:'https://${{ github.repository_owner }}.github.io/boulder/',androidScheme:'https'};require('fs').writeFileSync(f,JSON.stringify(c,null,2));console.log('points at',c.server.url)"
 
-      - name: Add Android platform
+      - name: Add Android
         run: npx cap add android
 
-      - name: Patch the Android project
+      - name: Patch
         run: node scripts/patch-android.js
 
       - name: Sync
         run: npx cap sync android
 
-      - name: Restore signing key
-        if: ${{ env.KEYSTORE_B64 != '' }}
-        env:
-          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
-        run: echo "$KEYSTORE_B64" | base64 -d > android/app/boulder.keystore
-
       - name: Build
-        env:
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+          find . -name "*.apk" -exec cp {} ../boulder.apk \;
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boulder-apk
+          path: boulder.apk
