@@ -1,0 +1,71 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "remote loads the web app from GitHub Pages; bundled ships it inside the APK"
+        required: true
+        default: remote
+        type: choice
+        options: [remote, bundled]
+  push:
+    paths:
+      - "capacitor.config.json"
+      - "package.json"
+      - "scripts/**"
+      - ".github/workflows/build-apk.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Assemble web layer
+        run: |
+          MODE="${{ github.event.inputs.mode || 'remote' }}"
+          mkdir -p www
+          cp -r index.html css js icons data manifest.webmanifest sw.js www/
+          if [ "$MODE" = "remote" ]; then
+            node -e "
+              const f='capacitor.config.json', c=JSON.parse(require('fs').readFileSync(f));
+              c.server = c.server || {};
+              c.server.url = 'https://${{ github.repository_owner }}.github.io/boulder/';
+              c.server.cleartext = false;
+              require('fs').writeFileSync(f, JSON.stringify(c, null, 2));
+              console.log('pointing at', c.server.url);
+            "
+          else
+            echo 'bundling the web layer into the apk'
+          fi
+
+      - name: Add Android platform
+        run: npx cap add android
+
+      - name: Patch the Android project
+        run: node scripts/patch-android.js
+
+      - name: Sync
+        run: npx cap sync android
+
+      - name: Restore signing key
+        if: ${{ env.KEYSTORE_B64 != '' }}
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+        run: echo "$KEYSTORE_B64" | base64 -d > android/app/boulder.keystore
+
+      - name: Build
+        env:
