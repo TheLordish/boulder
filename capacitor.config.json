@@ -1,0 +1,18 @@
+{
+  "appId": "io.github.thelordish.boulder",
+  "appName": "Boulder",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#000000"
+  },
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_boulder",
+      "iconColor": "#FFFFFF"
+    }
+  }
+}
