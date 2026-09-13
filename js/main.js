@@ -3,7 +3,7 @@
 (function (App) {
   "use strict";
 
-  var BUILD = "5.1.0";
+  var BUILD = "5.1.1";
 
   function el(id) { return document.getElementById(id); }
 
