@@ -1,7 +1,7 @@
 (function (App) {
   "use strict";
 
-  var VERSION = "Boulder 5.1.0";
+  var VERSION = "Boulder 5.1.1";
   // where a figure came from, and the only values allowed on an item
   var SRC = ["database", "web", "estimate", "given", "label"];
 
